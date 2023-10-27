@@ -10,15 +10,23 @@ import java.util.ArrayList;
  */
 public class Sroka {
     /**
-     * deklaracja tablicy ref-czyli odniesienia-nasza pierwotna sroka
+     * tablica binarna z informacjami o obrazku sroki-punkt odniesienia
      */
     private static ArrayList<ArrayList<Integer>> ref;
     BufferedImage img=new BufferedImage(100, 100, BufferedImage.TYPE_BYTE_GRAY);
-
+    /**
+     * tablica z wspólrzędnymi białych kropek w obrazku sroki
+     */
     private ArrayList<ArrayList<Integer>> inf;
+    /**
+     * tablica binarna z informacjami o obrazku
+     */
     public ArrayList<ArrayList<Integer>> store;
     static int elements=0;
 
+    /**
+     * konstruktor domyślny-ładuje obrazek sroki, by móc znajdować sroki w innych obrazkach
+     */
     Sroka()
     {
         try {
@@ -27,15 +35,17 @@ public class Sroka {
         {
             System.out.println("Nie udało się załadować obrazka");
         }
+
         GetMapy();
+
         ref=new ArrayList<>(2);
         for(int i=0;i<2;i++)
             ref.add(new ArrayList<>(store.get(0).size()));
         ref=store;
-        to_function(ref);
+        to_contour(ref);
     }
     /**
-     * method for load picture to instation of a class
+     * method for load picture to instation of a class i od razy konwertuje do tablicy
      * @param name
      * @throws IOException
      */
@@ -45,28 +55,11 @@ public class Sroka {
         ImageToArray();
     }
 
-    public void change()
-    {
-        try {
-            DisplayImage(inf, 68, 94,"mian");
-        }catch(IOException e)
-        {
-            System.out.println("Coś poszło nie tak");
-        }
-    }
-
     /**
-     * możemy podać jako argumenty puste tablice które będą uzupełnione ooo mamy najmniejszy do największy punkt  oraz dla każdego x znajdujemy y the highest!!!!
-     * jak to zastosowac dla reszty ptaków lecimy pokolei po pikselach sekwencyjnie +1+1 kiedy
-     * spotkamy na swojej drodze 1 do zaczynamy sprawdzac czy dany punkt
-     * wpasowuje sie do funcji- gdy jest zero przerywamy  jesli nie jedziemy dalej-gdy
-     * liczba się zgadza tyle co bylo w ref to konczymy i mowimy eureka-
-     * ale to już sprawdzamy w tej z liczbami nie kolorami-
-     * i własnie wybieramy -najwieksze x i najwieksze y dla tych x i
-     * sprawdzamy czy sie zgadza
-     * @param table-bedzie to nasza tablica ref
+     * funkcja wybierająca współrzędne górnego konturu sroki-punktów które tworzą funkcję
+     * @param table
      */
-    private void to_function(ArrayList<ArrayList<Integer>> table)
+    private void to_contour(ArrayList<ArrayList<Integer>> table)
     {
         int k,y_max=0;
         //tablice które opisują kontur
@@ -118,77 +111,68 @@ public class Sroka {
 
     /**
      *
-     * store-tablica współrzędnych białych pikseli w dużym obrazie
+     * store-tablica współrzędnych białych pikseli w załadowanym obrazie
      *             własciwe liczenie srok
+     *             tutaj współrzędne powinny być w jakiejś tablicy globalnej teoretycznie
      */
     public int GetMapies()
 
     {
+        GetMapy();
+
+        //x_p oraz x_y- przesunięcie danej białej figury sroki, x-liczba srok
         int x=0,x_p=0,y_p=0;
-        //tu będzie tablica z współrzędnymi/znowu ale może inną damy:
+        //tablice do zapisu wspólrzędnych wspólnych punktów
         ArrayList<Integer> tabx;
         ArrayList<Integer> taby;
         tabx=new ArrayList<>();
         taby=new ArrayList<>();
+
+        //tutaj zapisujemy współrzędne tylko tych punktów, których ilość jest odpowiednia-są górnym konturem sroki
         ArrayList<Integer> tabxx=new ArrayList<>();
         ArrayList<Integer> tabyy=new ArrayList<>();
-        int i,j,k,sroki=0,y_max=0,n=0,m;
-        for(i=0;i<img.getHeight();i+=5) {
+
+        //zmienne do iterowania po tablicach
+        //n-liczba wspólnych punktów konturu sroki i konturu danego znalezionego bialego elementu na obrazku
+        int i,j,k,sroki=0,y_min,n=0,m;
+
+        for(i=0;i<img.getHeight();i++) {
+
             n = 0;
 
-            y_max = 1000;
             for (j = 0; j < img.getWidth(); j++) {
-                y_max = 1000;
+
+                y_min = 1000;
+
+                //sprawdzanie czy znajduje się biała kropka o danej współrzędnej x
                 if (store.get(0).contains(j)) {
+
+                    //szukamy tego punktu który jest elementem górnego konturu-znajduje się najwyżej
                     for (k = 0; k < store.get(0).size(); k++)
-                        if (store.get(0).get(k) == j && store.get(1).get(k) < y_max && store.get(1).get(k) > i) {
-                            y_max = store.get(1).get(k);
-
+                        if (store.get(0).get(k) == j && store.get(1).get(k) < y_min && store.get(1).get(k) > i) {
+                            y_min = store.get(1).get(k);
                         }
-                    //sprawdzimy teraz czy kolejny punkt jest punktem początku kolejnego zwierza
-                    //tutaj chcemy przeszukać wszyskie elementy ktore zawierają tego x i  wyodrębnic tego co mają największy y
-//                    if(lagrangeInterpolation(ref.get(0),ref.get(1),j,y_max)) {
-////                        if(tabx.size()!=0) {
-////                            if(j==(tabx.get(tabx.size()-1)+1)) {
-////                                tabx.add(j);//czy j jest o 1 większy od porzedniego?
-////                                taby.add(y_max);
-////                                x++;
-////                            }
-////                        }
-////                        else {
-//                            tabx.add(j);//czy j jest o 1 większy od porzedniego?
-//                            taby.add(y_max);
-//                            x++;
-//
-//                       // }
-//                    }
 
+                    //sprawdzanie czy dany punkt należy do krzywej wyznaczonej przez kontur sroki
+                    if (lagrangeInterpolation(ref.get(0), ref.get(1), j - x_p, y_min - y_p)) {
 
-                    if (lagrangeInterpolation(ref.get(0), ref.get(1), j - x_p, y_max - y_p)) {
-//                        if(tabx.size()!=0) {
-//                            if(j==(tabx.get(tabx.size()-1)+1)) {
-//                                tabx.add(j);//czy j jest o 1 większy od porzedniego?
-//                                taby.add(y_max);
-//                                x+
-//                            }
-//                        }
-//                        else {
                         n++;
-                        tabx.add(j);//czy j jest o 1 większy od porzedniego?
-                        taby.add(y_max);
-
-                        // }
-
+                        tabx.add(j);
+                        taby.add(y_min);
                     }
 
                 }
                 if (tabx.size() != 0) {
-                    if (tabx.get(tabx.size() - 1) < (j - 3)) {
+                    //jesli wzięty element jest elementem kolejnego konturu na obrazku ustalamy jego przesuniecie
+                    if (tabx.get(tabx.size() - 1) < (j)) {
+
                         x_p = j - ref.get(0).get(0);
-                        y_p = y_max - ref.get(1).get(0);
+                        y_p = y_min - ref.get(1).get(0);
+                        //sprawdzamy czy ilość wspólnych punktów wystarcza, aby uznać ten element za srokę
                         if (Math.abs(n - elements) < 20) {
                             x++;
                             n = 0;
+                            //jesli tak to zachowujemy wspołrzędne punktów
                             if(tabx==null) {
                                 tabxx = tabx;
                                 tabyy = taby;
@@ -202,16 +186,13 @@ public class Sroka {
                             }
                         } else {
 
-                                tabx.clear();
-                                taby.clear();
+                            tabx.clear();
+                            taby.clear();
 
                         }
                     }
-//                if(10<(x) && x<50) {
-//                    sroki++;
-//                    x=0;
-//                }
                 }
+
 
             }
         }
@@ -282,7 +263,7 @@ public class Sroka {
     }
 
     /**
-     * wypełniamy tablicę int elementami 1 i 0- 0 jak jest czarne i 1- jak jest białe
+     * wypełniamy tablicę int elementami 1 i 0 na podstawie wczytanego do programu obrazka- 0 jak jest czarne i 1- jak jest białe
      */
     private void ImageToArray() {
         int p, a, r, g;
@@ -314,9 +295,9 @@ public class Sroka {
     /**
      * tutaj zliczamy liczbę kropek na sroce-na obrazku referencyjnym służącym za nasz model
      * oraz przechowamy współrzędne tych kropek
-     * @return
+     * @return - zwraca liczbę tych kropek
      */
-    public int GetMapy()
+    private int GetMapy()
     {
         int amount=0;
         int i,j;
