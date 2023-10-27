@@ -122,19 +122,20 @@ public class Sroka {
 
         //x_p oraz x_y- przesunięcie danej białej figury sroki, x-liczba srok
         int x=0,x_p=0,y_p=0;
+        //zmienne do iterowania po tablicach
+        //n-liczba wspólnych punktów konturu sroki i konturu danego znalezionego bialego elementu na obrazku
+        int i,j,k,sroki=0,y_min,y_max=0,n=0,m=1,l;
         //tablice do zapisu wspólrzędnych wspólnych punktów
         ArrayList<Integer> tabx;
         ArrayList<Integer> taby;
         tabx=new ArrayList<>();
         taby=new ArrayList<>();
+        ArrayList<Integer> max_x=new ArrayList<>();
+        ArrayList<Integer> max_y=new ArrayList<>();
 
         //tutaj zapisujemy współrzędne tylko tych punktów, których ilość jest odpowiednia-są górnym konturem sroki
         ArrayList<Integer> tabxx=new ArrayList<>();
         ArrayList<Integer> tabyy=new ArrayList<>();
-
-        //zmienne do iterowania po tablicach
-        //n-liczba wspólnych punktów konturu sroki i konturu danego znalezionego bialego elementu na obrazku
-        int i,j,k,sroki=0,y_min,n=0,m;
 
         for(i=0;i<img.getHeight();i++) {
 
@@ -148,10 +149,12 @@ public class Sroka {
                 if (store.get(0).contains(j)) {
 
                     //szukamy tego punktu który jest elementem górnego konturu-znajduje się najwyżej
-                    for (k = 0; k < store.get(0).size(); k++)
-                        if (store.get(0).get(k) == j && store.get(1).get(k) < y_min && store.get(1).get(k) > i) {
+                    for (k = 0; k < store.get(0).size(); k++) {
+                        if (store.get(0).get(k) == j && store.get(1).get(k) < y_min && store.get(1).get(k) > y_max) {
                             y_min = store.get(1).get(k);
                         }
+
+                    }
 
                     //sprawdzanie czy dany punkt należy do krzywej wyznaczonej przez kontur sroki
                     if (lagrangeInterpolation(ref.get(0), ref.get(1), j - x_p, y_min - y_p)) {
@@ -163,11 +166,46 @@ public class Sroka {
 
                 }
                 if (tabx.size() != 0) {
-                    //jesli wzięty element jest elementem kolejnego konturu na obrazku ustalamy jego przesuniecie
+                    //jesli wzięty element jest elementem kolejnego konturu na obrazku ustalamy jego przesuniecie zakładam,
                     if (tabx.get(tabx.size() - 1) < (j)) {
-
+                        int x_max=0;
                         x_p = j - ref.get(0).get(0);
                         y_p = y_min - ref.get(1).get(0);
+                        //dla poprzedniego tego elementu powinniśmy znaleźć y_max
+                        for(l=y_min+1;l<img.getHeight();l++){
+                            for (k = 0; k < store.get(0).size(); k++)
+                                if (store.get(0).get(k) == j) {
+
+                                    if (store.get(0).get(k) < j && store.get(0).get(k) > (j - 10) && store.get(1).get(k) == l) {
+                                        m=1;
+                                        break;
+                                    } else {
+                                        y_max = l;
+                                        x_max = store.get(0).get(k);
+                                        m=0;
+                                        break;
+                                    }
+                                }
+                            if(m==0)
+                                break;
+                        }
+                        max_y.add(y_max);
+                        max_x.add(x_max);
+                        //jednocześnie powinniśmy tutaj znaleźć dla niego y który powinien być ograniczeniem dla bieżącego, nie poprzedniego elementu
+                        int min_od=Math.abs(max_x.get(0)-j);
+                        int ind=0;
+                        for(m=0;m<max_x.size();m++) {
+                            if(Math.abs(max_x.get(m)-j)<min_od)
+                            {
+                                min_od=Math.abs(max_x.get(m)-j);
+                                ind=m;
+
+                            }
+
+                        }
+                        y_max=max_y.get(ind);
+
+
                         //sprawdzamy czy ilość wspólnych punktów wystarcza, aby uznać ten element za srokę
                         if (Math.abs(n - elements) < 20) {
                             x++;
