@@ -1,1 +1,1 @@
-Program przyjmuje jako parametry numer miesiąca który chcemy zobaczyć oraz numer roku. Drugą opcją jest wywołanie bez parametru-wtedy pokazuje aktualny miesiąc.
+Program wybierający z obrazku tekstowego z różnymi ptakami tylko sroki. 
