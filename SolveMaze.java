@@ -7,18 +7,19 @@ public class SolveMaze {
     
     //tablica opisujaca labrynt
     ArrayList<ArrayList<Integer>> tab;
-    //wspolrzedne punktu startowego
-    int[] start=new int[2];
     //zapisywane wpolrzedne najkrotszej sciezki
     ArrayList<ArrayList<Integer>> paths;
-    //tutaj moja zmienna
-    int s = 0;
+    //wspolrzedne punktu startowego i koncowego
+    int[] start = new int[2];
+    int[] finish = new int[2];
+    
     //zaladowanie labiryntu do tablicy
     private void loadMaze(String plik)
     {
         tab=new ArrayList<>();
-        int i=0;
-        int n=0;
+        int i = 0;
+        int n = 0;
+        int j = 0;
 
         Path path = FileSystems.getDefault().getPath(".", plik);
         
@@ -26,27 +27,40 @@ public class SolveMaze {
             
             BufferedReader reader =new BufferedReader(new InputStreamReader(in))) {
             String line = null;
+          
             while ((line = reader.readLine()) != null) {
         
                 tab.add(new ArrayList<>());
-                //System.out.println(line);
                 while(n<line.length())
                 {
-                    if(line.charAt(n)=='W')
+                    if (line.charAt(n) == 'W')
+                    {
                         tab.get(i).add(-1);
-                    if(line.charAt(n)=='C')
+                        j++;
+                    }
+                    if (line.charAt(n) == 'C')
+                    {
                         tab.get(i).add(0);
+                        j++;
+                    }
                     if(line.charAt(n)=='S')
                     {
                         tab.get(i).add(1);
                         start[0]=i;
-                        start[1]=n;
+                        start[1] = j;
+                        j++;
                     }
-                        if(line.charAt(n)=='F')
-                        tab.get(i).add(-2);   
+                    if(line.charAt(n)=='F')
+                    {
+                        tab.get(i).add(-2);
+                        finish[0] = i;
+                        finish[1] = j;
+                        j++;
+                    }
                     n++;
                 }
-                n=0;
+                n = 0;
+                j = 0;
                 i++;
             }   
         } catch (IOException x) {
@@ -73,88 +87,62 @@ public class SolveMaze {
     //metoda pozwalajaca na ustalenie mozliwych sciezek
     public void makePaths()
     {
-        do
-        {
-            numberAdjacent();
-            if(s>200)
-            {
-                break;
-            }
-        }
-        while(tab.get(start[0]).get(start[1])!=(-2));
-    }
-    private void numberAdjacent(){
-        s++;
-        int i=start[0];
-        int j=start[1];
 
-            if(j<(tab.get(0).size()-1))
-                if(tab.get(i).get(j+1)==0)
-                {
-                    tab.get(i).set(j+1,tab.get(i).get(j)+1);
-                    start[0]=i;
-                    start[1] = j + 1;
-                    System.out.println("i: " + start[0]);
-                     System.out.println("j: " + start[1]);
-                  
-                    if(tab.get(i).get(j+1)==-2)
-                {
-                    start[0]=i;
-                    start[1]=j+1;
+        numberAdjacent(start[0], start[1]);
+
+    }
+    /**
+     * procedura ktora rekurencyjnie wyznacza wszystkie mozliwe drogi do celu
+     * @param i
+     * @param j
+     */
+    private void numberAdjacent(int i, int j){
+
+               
+            if (j < (tab.get(0).size() - 1)) {
+
+                if (tab.get(i).get(j + 1) == -2) {
+                    tab.get(i).set(j + 1, tab.get(i).get(j) + 1);
+                    return;
                 }
+                if (tab.get(i).get(j + 1) == 0) {
+                    tab.get(i).set(j + 1, tab.get(i).get(j) + 1);
+                    numberAdjacent(i, j + 1);
                 }
-             if(i<(tab.size()-1))
-                if(tab.get(i+1).get(j)==0)
-                {
-                    tab.get(i+1).set(j,tab.get(i).get(j)+1);
-                    start[0]=i+1;
-                    start[1] = j;
-                      System.out.println("i: " + start[0]);
-                     System.out.println("j: " + start[1]);
-                  
-                    
-                    if(tab.get(i+1).get(j)==-2)
-                {
-                    start[0]=i+1;
-                    start[1]=j;
-                      
+            }
+            if (i < (tab.size() - 1)) {
+                if (tab.get(i + 1).get(j) == -2) {
+                     tab.get(i + 1).set(j, tab.get(i).get(j) + 1);
+                    return;
                 }
+                if (tab.get(i + 1).get(j) == 0) {
+                    tab.get(i + 1).set(j, tab.get(i).get(j) + 1);
+                    numberAdjacent(i + 1, j);
                 }
-                 if(j!=0){
+            }
+            if (j != 0) {
+                if (tab.get(i).get(j - 1) == -2) {
+                        tab.get(i).set(j-1,tab.get(i).get(j)+1);
+                        return;
+                }
                     if(tab.get(i).get(j-1)==0)
                     {
                         tab.get(i).set(j-1,tab.get(i).get(j)+1);
-                        start[0]=i;
-                        start[1] = j - 1;
-                          System.out.println("i: " + start[0]);
-                     System.out.println("j: " + start[1]);
-                  
-                       
+                        numberAdjacent(i, j-1);
+                  }
+                }
+            if (i != 0) {
+
+                if (tab.get(i - 1).get(j) == -2) {
+                        tab.get(i-1).set(j,tab.get(i).get(j)+1);
+                        return;
                     }
-                        if(tab.get(i).get(j-1)==-2)
-                {
-                    start[0]=i;
-                    start[1]=j-1;
-                       
-                }
-                }
-                if(i!=0){
                     if(tab.get(i-1).get(j)==0)
                     {
                         tab.get(i-1).set(j,tab.get(i).get(j)+1);
-                        start[0]=i-1;
-                        start[1] = j;
-                          System.out.println("i: " + start[0]);
-                     System.out.println("j: " + start[1]);
-                  
-                       
+                           numberAdjacent(i-1,j);   
                     }
-                    if(tab.get(i-1).get(j)==-2)
-                {
-                    start[0]=i-1;
-                    start[1]=j;
-                       
-                }
+
                 }
                
                 
@@ -166,7 +154,72 @@ public class SolveMaze {
      */
     public void backtrack()
     {
-      
+        paths = new ArrayList<>();
+        rekpowrot(finish[0], finish[1]);
+
+    }
+  
+    int z = 0;
+    /**
+     * procedura zapisujaca wspolrzedne najkrotszej sciezki do tablicy
+     * @param i
+     * @param j
+     */
+    void rekpowrot(int i,int j)
+    {
+        int el = tab.get(i).get(j);
+        paths.add(new ArrayList<>());
+        paths.get(z).add(i);
+        paths.get(z).add(j);
+        z++;
+        if (j < (tab.get(0).size() - 1)) {
+
+            if (tab.get(i).get(j + 1) == 1) {
+                return;
+            }
+            if (tab.get(i).get(j + 1) == el - 1) {
+                rekpowrot(i, j + 1);
+            }
+        }
+        if (i < (tab.size() - 1)) {
+            if (tab.get(i + 1).get(j) == 1) {
+                return;
+            }
+            if (tab.get(i + 1).get(j) == el - 1) {
+                rekpowrot(i + 1, j);
+            }
+        }
+        if (j != 0) {
+            if (tab.get(i).get(j - 1) == 1) {
+                return;
+            }
+            if (tab.get(i).get(j - 1) == el - 1) {
+                rekpowrot(i, j - 1);
+            }
+        }
+        if (i != 0) {
+
+            if (tab.get(i - 1).get(j) == 1) {
+                return;
+            }
+            if (tab.get(i - 1).get(j) == el - 1) {
+                rekpowrot(i - 1, j);
+            }
+        }
     }
     
+    /**
+     * procedura pozazujaca wspolrzedne najkrotszej drogi
+     */
+
+    public void readWay()
+    {
+        System.out.println("Wspolrzedne najkrotszej sciezki");
+        for(int i=0;i<paths.size();i++)
+        {
+            for(int j=0;j<paths.get(i).size();j++)
+                System.out.print(paths.get(i).get(j)+"\t");
+             System.out.println();
+        }
+    }
 }
