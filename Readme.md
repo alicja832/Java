@@ -1,1 +1,1 @@
-Projekty napisane w czasie zajęć z Javy na uczelni.
+Projekty stworzone w czasie zajęć z Javy na uczelni.
