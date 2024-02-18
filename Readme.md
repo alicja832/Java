@@ -1,1 +1,1 @@
-Program wybierający z obrazku tekstowego z różnymi ptakami tylko sroki. 
+Projekty napisane w czasie zajęć z Javy na uczelni.
