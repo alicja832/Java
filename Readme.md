@@ -1,1 +1,1 @@
-Projekty stworzone w czasie zajęć z Javy na uczelni.
+Projekts JAVA at AGH university.
